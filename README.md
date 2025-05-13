@@ -25,15 +25,25 @@ swarm官方推荐Manager节点数量为3/5/7，数量过大因为raft算法同�
 
 ```shell
 # attachable
-docker network create --driver overlay --subnet=10.200.1.0/16 --attachable fabric
+# live-restore为false
+
 ```
 
 ## swarm集群创建
 
 ```shell
+# step1
 docker swarm init --advertise-addr 172.22.54.97
-docker swarm join-token manager // 获取manager节点加入命令
-docker swarm join-token worker // 获取worker节点加入命令
+
+# step2 创建overlay网络
+docker network create --driver overlay --subnet=10.200.1.0/16 --attachable fabric
+
+# step3 节点加入
+# 获取manager节点加入命令
+docker swarm join-token manager
+# 获取worker节点加入命令
+docker swarm join-token worker
+# docker swarm join --token SWMTKN-1-61vuoifzk1fi2n5ycnt1ofkcpjt4gwa8y06mav118vxoj8kqmv-4u9321bjfjfch37og6vxsxrnk 172.22.54.97:2377
 ```
 
 ### swarm服务创建
@@ -100,20 +110,21 @@ docker service scale my-web=2 // 服务扩(缩)容
 ### swarm集群退出
 
 ```shell
-docker swarm leave --force
+docker swarm leave -f
 ```
 
 ### swarm节点管理命令
 
 ```shell
-docker node ls # 查看节点
-
-docker node rm xxxxxxxxxxxx # 删除节点
-
-docker node promote node01 # 升级worker为manager
-
-docker node demote manager01 # manager节点降级为worker
-
+# 查看节点
+docker node ls
+# 删除节点
+docker node rm xxxxxxxxxxxx 
+# 升级worker为manager
+docker node promote node01 
+# manager节点降级为worker
+docker node demote manager01 
+# 更新节点
 docker node update --availability drain manager
 # node update: 更改节点状态
 # --availability: 三种状态
@@ -125,6 +136,12 @@ docker node update --availability drain manager
 docker node update --availability drain master
 # 2.允许
 docker node update –availability active master
+```
+
+### swarm证书轮换
+
+```shell
+docker swarm ca --rotate
 ```
 
 
